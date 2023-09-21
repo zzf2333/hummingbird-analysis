@@ -1,35 +1,36 @@
 {
-	"name": "hummingbird-analysis",
-	"description": "Analyze wallet activities/transactions on-chain, calculate the success rate and profits of wallet operations.📊🧾",
-	"author": {
-		"name": "0xsnx.eth",
-		"email": "zzfzl2022@gmail.com"
-	},
-	"packageManager": "bun@1.0.2",
-	"private": true,
-	"type": "module",
-	"version": "0.0.1",
-	"scripts": {
-		"build": "nuxt build",
-		"dev": "nuxt dev",
-		"generate": "nuxt generate",
-		"preview": "nuxt preview",
-		"postinstall": "nuxt prepare"
-	},
-	"devDependencies": {
-		"@nuxt/devtools": "latest",
-		"nuxt": "^3.7.3"
-	},
-	"dependencies": {
-		"@nuxtjs/color-mode": "^3.3.0",
-		"@nuxtjs/i18n": "next",
-		"@pinia/nuxt": "^0.4.11",
-		"@sidebase/nuxt-pdf": "^0.1.1",
-		"@unocss/nuxt": "^0.56.0",
-		"@vite-pwa/nuxt": "^0.1.1",
-		"@vueuse/nuxt": "^10.4.1",
-		"consola": "^3.2.3",
-		"nuxt-icon": "^0.5.0",
-		"nuxt-lodash": "^2.5.0"
-	}
+  "name": "hummingbird-analysis",
+  "description": "Analyze wallet activities/transactions on-chain, calculate the success rate and profits of wallet operations.📊🧾",
+  "author": {
+    "name": "0xsnx.eth",
+    "email": "zzfzl2022@gmail.com"
+  },
+  "packageManager": "bun@1.0.2",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "nuxt": "^3.7.3"
+  },
+  "dependencies": {
+    "@iconify-json/carbon": "^1.1.21",
+    "@nuxtjs/color-mode": "^3.3.0",
+    "@nuxtjs/i18n": "next",
+    "@pinia/nuxt": "^0.4.11",
+    "@sidebase/nuxt-pdf": "^0.1.1",
+    "@unocss/nuxt": "^0.56.0",
+    "@vite-pwa/nuxt": "^0.1.1",
+    "@vueuse/nuxt": "^10.4.1",
+    "consola": "^3.2.3",
+    "nuxt-icon": "^0.5.0",
+    "nuxt-lodash": "^2.5.0"
+  }
 }

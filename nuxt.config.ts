@@ -13,6 +13,9 @@ export default defineNuxtConfig({
 		'@vite-pwa/nuxt',
 		'@vueuse/nuxt',
 	],
+	i18n: {
+		vueI18n: './i18n.config.ts' // if you are using custom path, default 
+	},
 	experimental: {
 		// when using generate, payload js assets included in sw precache manifest
 		// but missing on offline, disabling extraction it until fixed
