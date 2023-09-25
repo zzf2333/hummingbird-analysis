@@ -1,5 +1,5 @@
-import en from './locales/enUS.yml';
-import zh from './locales/zhCN.yml';
+import en from './locales/enUS.json';
+import zh from './locales/zhCN.json';
 
 export default defineI18nConfig(() => ({
     legacy: false,
