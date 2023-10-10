@@ -30,7 +30,7 @@ export default defineConfig({
     },
     rules: [],
     shortcuts: [
-        ['btn-icon', 'color-slate-5 dark:color-slate-2 hover:color-slate-6 active:color-slate-7 dark:hover:color-slate-3 dark:active:color-slate-4 text-xl'],
+        ['btn-icon', 'color-slate-5 dark:color-slate-2 hover:color-slate-6 active:color-slate-7 dark:hover:color-slate-3 dark:active:color-slate-4 text-xl cursor-pointer'],
         ['input', 'bg-primary-100 border-primary-400 border border-solid outline-primary-500 py-2 px-4 shadow-lg rounded-3xl text-sm text-primary-700 placeholder:text-primary-500']
     ],
     presets: [

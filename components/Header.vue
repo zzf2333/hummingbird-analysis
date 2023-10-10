@@ -6,6 +6,9 @@
         </div>
         <div flex>
             <button class="!outline-none" btn-icon>
+                <div i-carbon-api-1 />
+            </button>
+            <button class="!outline-none" m-l-3 btn-icon>
                 <div i-carbon-ibm-watson-language-translator />
             </button>
             <DarkToggle m-l-3 />
