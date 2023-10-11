@@ -13,7 +13,7 @@ const yaxis = type === 'profit'
             opposite: true,
         },
     }
-const colors = type === 'profit' ? ['#8de8a6', '#66DA26', '#546E7A', '#E91E63', '#FF9800'] : ['#fca5a5', '#66DA26', '#546E7A', '#E91E63', '#FF9800']
+const colors = type === 'profit' ? ['#64d884', '#66DA26', '#546E7A', '#E91E63', '#FF9800'] : ['#f87171', '#66DA26', '#546E7A', '#E91E63', '#FF9800']
 const options = reactive({
     chart: {
         id: 'vuechart-analyse-bar',
@@ -47,7 +47,7 @@ const options = reactive({
         offsetX: 52,
         style: {
             fontSize: '11px',
-            colors: [type === 'profit' ? '#2dba54' : '#f87171'],
+            colors: [type === 'profit' ? '#209942' : '#dc2626'],
         },
     },
     xaxis: {

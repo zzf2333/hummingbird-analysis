@@ -28,7 +28,7 @@ const options = reactive({
     },
     plotOptions: {
         treemap: {
-            enableShades: true,
+            enableShades: false,
             shadeIntensity: 0.5,
             reverseNegativeShade: true,
             colorScale: {
@@ -41,7 +41,7 @@ const options = reactive({
                     {
                         from: 0,
                         to: 1000,
-                        color: '#2dba54',
+                        color: '#64d884',
                     },
                 ],
             },

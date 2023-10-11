@@ -7,7 +7,7 @@ const options = reactive({
         height: 350,
         type: 'radialBar',
     },
-    colors: ['#8de8a6', '#fca5a5', '#546E7A', '#E91E63', '#FF9800'],
+    colors: ['#64d884', '#f87171', '#546E7A', '#E91E63', '#FF9800'],
     title: {
         text: title,
     },
