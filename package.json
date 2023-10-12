@@ -35,11 +35,12 @@
     "axios": "^1.5.1",
     "consola": "^3.2.3",
     "downloadjs": "^1.4.7",
-    "ethers": "5",
+    "ethers": "5.7.2",
     "html-to-image": "^1.11.11",
     "lodash": "^4.17.21",
     "nuxt-icon": "^0.5.0",
     "nuxt-lodash": "^2.5.0",
+    "taze": "^0.11.3",
     "vue3-apexcharts": "^1.4.4"
   }
 }
