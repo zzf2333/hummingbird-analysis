@@ -140,7 +140,7 @@ function parseSwapData(tx: any) {
     const { functionName, input, transfer, erc20 } = tx
     if (/swapETHForExactTokens/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
-        // console.log('swapETHForExactTokens', decodedParameters, tx)
+        // console.log('swapETHForExactTokens', decodedParameters, tx, erc20)
         tx.swap = {
             tokenOut: erc20 ? setToken(erc20.contractAddress, Number(erc20.tokenDecimal), erc20.tokenSymbol, erc20.tokenName) : decodedParameters.path[1],
             amountOut: decodedParameters.amountOut.toString(),
@@ -190,7 +190,7 @@ function parseSwapData(tx: any) {
     }
     else if (/swapExactETHForTokens\(/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
-        console.log('swapExactETHForTokens', decodedParameters, tx)
+        // console.log('swapExactETHForTokens', decodedParameters, tx)
     }
 
     // Format the amount
@@ -232,6 +232,6 @@ export function parseTransaction(txs: any[], erc20Txs: any[], transferTxs: any[]
     let swapTxs = _.filter(allTxs, (transaction: any) => _.some(SWAP_FUNCTION_NAME, (name: string) => transaction.functionName.includes(name)))
     swapTxs = filterSwapTransactions(swapTxs)
     const swapData = swapTxs.map((tx: any) => ({ ...tx.swap, hash: tx.hash, timeStamp: tx.timeStamp }))
-    console.log('Unparsed data: ', swapTxs.filter((row: any) => !row.swap))
+    console.log('Parse swap count : ', swapTxs.length)
     return swapData
 }

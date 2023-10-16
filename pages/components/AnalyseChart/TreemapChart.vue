@@ -1,7 +1,10 @@
 <script setup lang="ts">
-const series: any = [{
-    data: [{ x: 'LINK', y: 40.3702 }, { x: 'BTC', y: 38.3374 }, { x: 'ETH', y: 37.9801 }, { x: 'OP', y: 32.8322 }, { x: 'ARB', y: 28.8322 }, { x: 'SUI', y: 25.8322 }, { x: 'MASK', y: 10.8322 }, { x: 'UNI', y: 6.8322 }, { x: 'BNB', y: 2.8322 }, { x: 'ZRX', y: 1.8322 }, { x: 'HIFI', y: -9.9223 }, { x: 'BCH', y: -8.9223 }, { x: 'APE', y: -7.9223 }, { x: 'TRX', y: -6.9223 }, { x: 'BLZ', y: -5.9223 }, { x: 'AKRO', y: -4.9223 }, { x: 'BACK', y: -3.9223 }, { x: 'CFX', y: -2.9223 }, { x: 'ADA', y: -1.9223 }, { x: 'SHIB', y: -0.9223 }],
-}]
+
+const props = defineProps<{
+    chartData: any[]
+}>()
+
+let series: any[] = []
 const options = reactive({
     legend: {
         show: false,
@@ -26,6 +29,13 @@ const options = reactive({
         },
         offsetY: -4,
     },
+    tooltip: {
+        y: {
+            formatter: function (val: number) {
+                return val + " ETH"
+            }
+        }
+    },
     plotOptions: {
         treemap: {
             enableShades: false,
@@ -48,6 +58,21 @@ const options = reactive({
         },
     },
 })
+
+function updateData(dataJson: any[]) {
+    const data = dataJson.map(item => ({ x: item.lable, y: parseFloat(item.value) }))
+    series = [{ data }]
+}
+
+watch(
+    () => props.chartData,
+    (chartData) => {
+        updateData(chartData)
+    },
+    {
+        immediate: true
+    }
+);
 </script>
 
 <template>
