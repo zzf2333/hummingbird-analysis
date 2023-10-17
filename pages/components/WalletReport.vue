@@ -5,21 +5,27 @@ import { toPng } from 'html-to-image';
 import download from "downloadjs";
 import _ from 'lodash'
 import { formatNumber } from "~/utils";
-import { fetchTransaction, fetchInternalTransferTransaction, fetchErc20TransferTransaction, parseTransaction } from '~/chain/parseTransaction';
+import { fetchTransaction, fetchInternalTransferTransaction, fetchErc20TransferTransaction, parseTransaction, fetchBalance } from '~/chain/parseTransaction';
+import { BigNumber } from 'ethers';
 
-const walletAddress = ref('0xe84e721327852104e744b71297923404ba59d81f');
+const walletAddress = ref('0xcDAa27cD5e34C0702D2c5327D8D3B5F562A50637');
 const reportRefs = ref(null)
 const swapData = ref<any[]>([])
 const tokenProfit = ref<any[]>([])
 const topMaxTen = ref<any[]>([])
 const topMinTen = ref<any[]>([])
 const topMapTen = ref<any[]>([])
-const winRate = ref('0');
-const cumulativeIncome = ref('0');
-const swapCount = ref(0);
+const walletInfo = reactive({
+    balance: '0',
+    swapCount: 0,
+    cumulativeIncome: '0',
+    winRate: '0',
+    sent: '0',
+    receive: '0'
+})
 
 onMounted(() => {
-    getWalletData()
+    // getWalletData()
 })
 
 const startTime = computed(() => {
@@ -68,15 +74,22 @@ function getSwapTokenRecord(data: any[]) {
 
 async function getWalletData() {
     if (!walletAddress.value) return ''
+    const responseBalance = await fetchBalance(walletAddress.value)
     const responseTxs = await fetchTransaction(walletAddress.value)
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const responseErc20Txs = await fetchErc20TransferTransaction(walletAddress.value)
     const responseTransferTxs = await fetchInternalTransferTransaction(walletAddress.value)
-    //console.log(responseTxs.data.result);
-    swapCount.value = responseTxs.data.result.length;
-    swapData.value = parseTransaction(responseTxs.data.result || [], responseErc20Txs.data.result || [], responseTransferTxs.data.result || [])
+    walletInfo.balance = formatNumber(fixedToFloat(BigNumber.from(responseBalance.data.result)))
+
+    walletInfo.swapCount = responseTxs.data.result.length;
+    const txData = parseTransaction(responseTxs.data.result || [], responseErc20Txs.data.result || [], responseTransferTxs.data.result || []);
+    swapData.value = txData.swapData;
     const swapTokenRecordData = getSwapTokenRecord(swapData.value);
     tokenProfit.value = swapTokenRecordData.tokenProfitData;
-
+    const receiveData = txData.transferTxs.filter(item => item.to.toLowerCase() === walletAddress.value.toLowerCase())
+    const sentData = txData.transferTxs.filter(item => item.from.toLowerCase() === walletAddress.value.toLowerCase())
+    walletInfo.receive = formatNumber(receiveData.reduce((total, item) => total + fixedToFloat(BigNumber.from(item.value)), 0));
+    walletInfo.sent = formatNumber(sentData.reduce((total, item) => total + fixedToFloat(BigNumber.from(item.value)), 0));
 
     // Top ten profit data
     const sortedMaxData = tokenProfit.value.sort((a, b) => b.eth - a.eth);
@@ -88,9 +101,9 @@ async function getWalletData() {
     topMapTen.value = [...topMaxTen.value, ...topMinTen.value];
     // Winning rate calculation
     const profitCount = tokenProfit.value.filter(item => item.eth > 0).length;
-    winRate.value = ((profitCount / tokenProfit.value.length) * 100).toFixed(2);
+    walletInfo.winRate = ((profitCount / tokenProfit.value.length) * 100).toFixed(2);
     // Cumulative income
-    cumulativeIncome.value = formatNumber(tokenProfit.value.reduce((total, item) => total + item.eth, 0));
+    walletInfo.cumulativeIncome = formatNumber(tokenProfit.value.reduce((total, item) => total + item.eth, 0));
 }
 
 // dwon load image
@@ -100,7 +113,7 @@ function dwonLoadImage() {
         backgroundColor: '#f1fcf3',
         pixelRatio: 2
     }).then(function (dataUrl) {
-        download(dataUrl, `${walletAddress}.png`);
+        download(dataUrl, `${walletAddress.value}.png`);
     }).catch(function (error) {
         console.error('oops, something went wrong!', error);
     });
@@ -124,7 +137,7 @@ function dwonLoadImage() {
                 <div flex mt-10>
                     <div class="w-1/3" px-8 shadow-lg py-4 bg-primary-400 rounded-lg shadow-slate-200 relative>
                         <p text-white absolute bottom-3 right-3 text-xs>交易胜率</p>
-                        <p text-6xl text-white text-center my-9 class="left-1/4	top-1/4">{{ winRate
+                        <p text-6xl text-white text-center my-9 class="left-1/4	top-1/4">{{ walletInfo.winRate
                         }}<span text-3xl>%</span></p>
                     </div>
                     <div flex-1 px-8 shadow-lg py-8 rounded-lg shadow-slate-300 ml-3 bg-white>
@@ -134,23 +147,24 @@ function dwonLoadImage() {
                                 <p text-xs text-primary-400>开始时间</p>
                             </div>
                             <div>
-                                <p text-base text-primary-500>0.2332 <span text-sm>ETH</span></p>
+                                <p text-base text-primary-500>{{ walletInfo.receive }} <span text-sm>ETH</span></p>
                                 <p text-xs text-primary-400>转入</p>
                             </div>
                             <div>
-                                <p text-base text-primary-500>30.8012 <span text-sm>ETH</span></p>
+                                <p text-base text-primary-500>{{ walletInfo.sent }} <span text-sm>ETH</span></p>
                                 <p text-xs text-primary-400>转出</p>
                             </div>
                             <div>
-                                <p text-base text-primary-500>{{ swapCount }}</p>
+                                <p text-base text-primary-500>{{ walletInfo.swapCount }}</p>
                                 <p text-xs text-primary-400>交易次数</p>
                             </div>
                             <div>
-                                <p text-base text-primary-500>30.8012 <span text-sm>ETH</span></p>
+                                <p text-base text-primary-500>{{ walletInfo.balance }} <span text-sm>ETH</span></p>
                                 <p text-xs text-primary-400>余额</p>
                             </div>
                             <div>
-                                <p text-2xl text-primary-600 font-600>{{ cumulativeIncome }}<span text-sm>ETH</span></p>
+                                <p text-2xl text-primary-600 font-600>{{ walletInfo.cumulativeIncome }}<span
+                                        text-sm>ETH</span></p>
                                 <p text-xs text-primary-600>获利</p>
                             </div>
                         </div>

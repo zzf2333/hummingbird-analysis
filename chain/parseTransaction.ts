@@ -16,7 +16,7 @@ const api = axios.create({
     baseURL: 'https://api.etherscan.io/api', // api base
     timeout: 10 * 60 * 1000, // request timeout
     params: {
-        apikey: process.env.ETHERSCAN_API_KEY || '',
+        apikey: '',
     },
 })
 
@@ -42,6 +42,21 @@ const SWAP_FUNCTION_NAME = [
 // uniswap v2 abi
 const uniV2Abi = new utils.Interface(UniSwapV2ABI)
 
+/**
+ * Get wallet balance
+ * @param {string} toAddress wallte address 
+ * @returns 
+ */
+export async function fetchBalance(toAddress: string) {
+    return api.get('', {
+        params: {
+            module: 'account',
+            action: 'balance',
+            address: toAddress,
+            tag: 'latest'
+        },
+    })
+}
 
 /**
  * Get address transaction history
@@ -49,7 +64,7 @@ const uniV2Abi = new utils.Interface(UniSwapV2ABI)
  * @returns 
  */
 export async function fetchTransaction(toAddress: string) {
-    if (process.env.NODE_ENV === 'development') return { data: { status: '1', result: transactions, message: 'success' } };
+    // if (process.env.NODE_ENV === 'development') return { data: { status: '1', result: transactions, message: 'success' } };
     return api.get('', {
         params: {
             module: 'account',
@@ -70,7 +85,7 @@ export async function fetchTransaction(toAddress: string) {
  * @returns 
  */
 export async function fetchErc20TransferTransaction(toAddress: string) {
-    if (process.env.NODE_ENV === 'development') return { data: { status: '1', result: erc20TransferTransactions, message: 'success' } };
+    // if (process.env.NODE_ENV === 'development') return { data: { status: '1', result: erc20TransferTransactions, message: 'success' } };
     return api.get('', {
         params: {
             module: 'account',
@@ -91,7 +106,7 @@ export async function fetchErc20TransferTransaction(toAddress: string) {
  * @returns 
  */
 export async function fetchInternalTransferTransaction(toAddress: string) {
-    if (process.env.NODE_ENV === 'development') return { data: { status: '1', result: internalTransfer, message: 'success' } };
+    // if (process.env.NODE_ENV === 'development') return { data: { status: '1', result: internalTransfer, message: 'success' } };
     return api.get('', {
         params: {
             module: 'account',
@@ -215,23 +230,24 @@ export function filterSwapTransactions(txns: any[]) {
  * Analyze transaction records
  * @param txs All transactions
  * @param erc20Txs Erc20 transfer record
- * @param transferTxs Internal transfer record
+ * @param internalTransferTxs Internal transfer record
  * @returns
  */
-export function parseTransaction(txs: any[], erc20Txs: any[], transferTxs: any[]) {
+export function parseTransaction(txs: any[], erc20Txs: any[], internalTransferTxs: any[]) {
     let allTxs = _.filter(txs, { txreceipt_status: '1' })
     allTxs = allTxs.map((tx) => {
         const erc20 = _.find(erc20Txs, { hash: tx.hash })
-        const transfer = _.find(transferTxs, { hash: tx.hash })
+        const transfer = _.find(internalTransferTxs, { hash: tx.hash })
         if (erc20)
             tx.erc20 = erc20
         if (transfer)
             tx.transfer = transfer
         return tx
     })
+    const transferTxs = _.filter(allTxs, (transaction: any) => transaction.methodId === '0x');
     let swapTxs = _.filter(allTxs, (transaction: any) => _.some(SWAP_FUNCTION_NAME, (name: string) => transaction.functionName.includes(name)))
     swapTxs = filterSwapTransactions(swapTxs)
     const swapData = swapTxs.map((tx: any) => ({ ...tx.swap, hash: tx.hash, timeStamp: tx.timeStamp }))
     console.log('Parse swap count : ', swapTxs.length)
-    return swapData
+    return { swapData, transferTxs }
 }

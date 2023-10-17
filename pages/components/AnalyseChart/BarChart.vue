@@ -7,7 +7,7 @@ const props = defineProps<{
 const barChart = ref(null);
 
 const colors = props.type === 'profit' ? ['#64d884', '#66DA26', '#546E7A', '#E91E63', '#FF9800'] : ['#f87171', '#66DA26', '#546E7A', '#E91E63', '#FF9800']
-let options = {
+let options: any = {
     chart: {
         id: 'vuechart-analyse-bar',
         type: 'bar',
@@ -61,6 +61,7 @@ let options = {
             show: false,
         },
         tickAmount: 5,
+        categories: []
     },
 }
 let series: any[] = []

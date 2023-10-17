@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const app = useAppStore();
+
+</script>
 <template>
     <div p-5 flex justify-between items-center>
         <div class="logo" flex items-center>
@@ -5,7 +9,7 @@
             <div color-primary-500 dark:color-primary-400 m-2 text-lg>Hummingbird Analysis</div>
         </div>
         <div flex>
-            <button class="!outline-none" btn-icon>
+            <button class="!outline-none" @click="app.setShowEtherscanApiModal(true)" btn-icon>
                 <div i-carbon-api-1 />
             </button>
             <button class="!outline-none" m-l-3 btn-icon>

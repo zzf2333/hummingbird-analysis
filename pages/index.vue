@@ -6,6 +6,8 @@ const loading = ref(false)
 const data = false;
 const walletAddress = ref('')
 
+const app = useAppStore();
+
 function onInput() {
     const address = walletAddress.value;
     if (/^0x[0-9a-fA-F]{40}$/.test(address)) {
@@ -22,7 +24,7 @@ function onInput() {
         <div fixed v-if="data"
             :class="['top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-9/12 md:max-w-xl', loading ? 'loading md:top-4/10' : '']">
             <div transition-all relative m-auto :class="[loading ? 'w-10' : '']">
-                <input v-model="walletAddress" placeholder="查询的钱包地址" input w-full
+                <input v-model="walletAddress" placeholder="查询的钱包地址" search-input w-full
                     :class="[loading ? 'px-5 border-0 outline-0' : '']" @input="onInput" />
                 <svg v-if="loading" absolute top-2 right-2.2 class="animate-spin h-5 w-5 text-primary-500"
                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -37,5 +39,8 @@ function onInput() {
         </div>
         <!-- report view -->
         <WalletReport v-else></WalletReport>
+        <!-- API -->
+        <Modal className="w-md" :showModal="app.showEtherscanApiModal" @onConfirm="app.setShowEtherscanApiModal(false)">
+        </Modal>
     </div>
 </template>
