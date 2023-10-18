@@ -6,8 +6,6 @@ const loading = ref(false)
 const data = false;
 const walletAddress = ref('')
 
-const app = useAppStore();
-
 function onInput() {
     const address = walletAddress.value;
     if (/^0x[0-9a-fA-F]{40}$/.test(address)) {
@@ -16,6 +14,7 @@ function onInput() {
         walletAddress.value = '';
     }
 }
+
 </script>
 
 <template>
@@ -39,8 +38,5 @@ function onInput() {
         </div>
         <!-- report view -->
         <WalletReport v-else></WalletReport>
-        <!-- API -->
-        <Modal className="w-md" :showModal="app.showEtherscanApiModal" @onConfirm="app.setShowEtherscanApiModal(false)">
-        </Modal>
     </div>
 </template>

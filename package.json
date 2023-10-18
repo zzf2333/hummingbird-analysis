@@ -21,6 +21,7 @@
     "nuxt": "^3.7.3"
   },
   "dependencies": {
+    "@css-render/vue3-ssr": "^0.15.12",
     "@iconify-json/carbon": "^1.1.21",
     "@nuxtjs/color-mode": "^3.3.0",
     "@nuxtjs/i18n": "next",
@@ -38,6 +39,7 @@
     "ethers": "5.7.2",
     "html-to-image": "^1.11.11",
     "lodash": "^4.17.21",
+    "naive-ui": "^2.35.0",
     "nuxt-icon": "^0.5.0",
     "nuxt-lodash": "^2.5.0",
     "taze": "^0.11.3",

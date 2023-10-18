@@ -11,6 +11,7 @@ export const useAppStore = defineStore('app', () => {
     // actions
     const setEtherscanApiKey = (key: string) => {
         etherscanApiKey.value = key
+        console.log(111);
         useStorage('ETHERSCAN_API_KEY', key)
     }
     const setShowEtherscanApiModal = (showModal: boolean) => {
