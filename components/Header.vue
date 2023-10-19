@@ -8,15 +8,6 @@ const message = useMessage()
 const showModal = ref(false);
 const etherscanApiValue = ref(app.etherscanApiKey);
 
-onMounted(() => {
-    notification.success({
-        content: 'API Keys更新成功',
-        meta: 'API Keys已成功保存在浏览器中，您可以愉快的使用分析功能了🎉',
-        duration: 3000,
-        keepAliveOnHover: true
-    })
-})
-
 function updateEtherscanApiKey() {
     app.setShowEtherscanApiModal(false)
     if (!etherscanApiValue.value || etherscanApiValue.value.length !== 34) {

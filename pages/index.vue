@@ -1,26 +1,73 @@
 <script setup lang="ts">
 import HomeSkeleton from './components/HomeSkeleton.vue'
 import WalletReport from './components/WalletReport.vue'
+import { fetchTransaction, fetchInternalTransferTransaction, fetchErc20TransferTransaction, fetchBalance } from '~/chain/parseTransaction';
+import { useMessage } from 'naive-ui'
+
+
+// test data
+import allTransactions from '~/json/all.json';
+import erc20Transactions from '~/json/erc20.json';
+import transferTransactions from '~/json/transfer.json';
+
+const message = useMessage()
 
 const loading = ref(false)
-const data = false;
 const walletAddress = ref('')
+const walletData = reactive({
+    all: [],
+    token: [],
+    transfer: [],
+    balance: '',
+    address: ''
+})
+
+onMounted(() => {
+    walletData.all = allTransactions || [];
+    walletData.token = erc20Transactions || [];
+    walletData.transfer = transferTransactions || [];
+    walletData.balance = '29';
+    walletData.address = '0x64339fb21E0D36f5CCC306dfab8e8bEeaB4DF70C'
+})
 
 function onInput() {
     const address = walletAddress.value;
     if (/^0x[0-9a-fA-F]{40}$/.test(address)) {
+        getWalletData();
         loading.value = true;
     } else {
         walletAddress.value = '';
     }
 }
 
+async function getWalletData() {
+    try {
+        const responseBalance = await fetchBalance(walletAddress.value)
+        const responseTxs = await fetchTransaction(walletAddress.value)
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const responseErc20Txs = await fetchErc20TransferTransaction(walletAddress.value)
+        const responseTransferTxs = await fetchInternalTransferTransaction(walletAddress.value)
+
+        walletData.all = responseTxs.data.result || [];
+        walletData.token = responseErc20Txs.data.result || [];
+        walletData.transfer = responseTransferTxs.data.result || [];
+        walletData.balance = responseBalance.data.result || '';
+        walletData.address = walletAddress.value || ''
+
+        console.log('all: ', JSON.stringify(walletData.all))
+        console.log('token: ', JSON.stringify(walletData.token))
+        console.log('transfer: ', JSON.stringify(walletData.transfer))
+    } catch (error) {
+        message.error('获取钱包数据异常，请稍后尝试~')
+        console.error(error);
+    }
+}
 </script>
 
 <template>
     <div class="home" pb-20>
         <!-- search box -->
-        <div fixed v-if="data"
+        <div fixed v-if="walletData.all.length <= 0"
             :class="['top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-9/12 md:max-w-xl', loading ? 'loading md:top-4/10' : '']">
             <div transition-all relative m-auto :class="[loading ? 'w-10' : '']">
                 <input v-model="walletAddress" placeholder="查询的钱包地址" search-input w-full
@@ -37,6 +84,6 @@ function onInput() {
             <HomeSkeleton v-if="loading"></HomeSkeleton>
         </div>
         <!-- report view -->
-        <WalletReport v-else></WalletReport>
+        <WalletReport :walletData="walletData" v-else></WalletReport>
     </div>
 </template>

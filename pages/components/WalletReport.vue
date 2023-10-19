@@ -5,10 +5,19 @@ import { toPng } from 'html-to-image';
 import download from "downloadjs";
 import _ from 'lodash'
 import { formatNumber } from "~/utils";
-import { fetchTransaction, fetchInternalTransferTransaction, fetchErc20TransferTransaction, parseTransaction, fetchBalance } from '~/chain/parseTransaction';
+import { parseTransaction } from '~/chain/parseTransaction';
 import { BigNumber } from 'ethers';
 
-const walletAddress = ref('0xcDAa27cD5e34C0702D2c5327D8D3B5F562A50637');
+const { walletData } = defineProps<{
+    walletData: {
+        balance: string,
+        token: any[],
+        transfer: any[],
+        all: any[],
+        address: string
+    }
+}>()
+
 const reportRefs = ref(null)
 const swapData = ref<any[]>([])
 const tokenProfit = ref<any[]>([])
@@ -24,16 +33,23 @@ const walletInfo = reactive({
     receive: '0'
 })
 
-onMounted(() => {
-    // getWalletData()
-})
-
 const startTime = computed(() => {
     const maxObject = _.minBy(swapData.value, 'timeStamp');
     return maxObject ? useDateFormat(new Date(maxObject.timeStamp * 1000), 'YYYY-MM-DD').value : '';
 })
 
+watch(
+    () => walletData,
+    (walletData) => {
+        if (walletData.all.length > 0) parseWalletData()
+    },
+    {
+        immediate: true
+    }
+);
+
 function getSwapTokenRecord(data: any[]) {
+    console.log('data: ', data);
     const tokenData = _(data)
         .map(item => {
             if (item.tokenIn.symbol !== 'ETH') {
@@ -72,22 +88,16 @@ function getSwapTokenRecord(data: any[]) {
     return { tokenData, tokenProfitData };
 }
 
-async function getWalletData() {
-    if (!walletAddress.value) return ''
-    const responseBalance = await fetchBalance(walletAddress.value)
-    const responseTxs = await fetchTransaction(walletAddress.value)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const responseErc20Txs = await fetchErc20TransferTransaction(walletAddress.value)
-    const responseTransferTxs = await fetchInternalTransferTransaction(walletAddress.value)
-    walletInfo.balance = formatNumber(fixedToFloat(BigNumber.from(responseBalance.data.result)))
+async function parseWalletData() {
+    walletInfo.balance = formatNumber(fixedToFloat(BigNumber.from(walletData.balance)))
 
-    walletInfo.swapCount = responseTxs.data.result.length;
-    const txData = parseTransaction(responseTxs.data.result || [], responseErc20Txs.data.result || [], responseTransferTxs.data.result || []);
+    walletInfo.swapCount = walletData.all.length;
+    const txData = parseTransaction(walletData.all, walletData.token, walletData.transfer);
     swapData.value = txData.swapData;
     const swapTokenRecordData = getSwapTokenRecord(swapData.value);
     tokenProfit.value = swapTokenRecordData.tokenProfitData;
-    const receiveData = txData.transferTxs.filter(item => item.to.toLowerCase() === walletAddress.value.toLowerCase())
-    const sentData = txData.transferTxs.filter(item => item.from.toLowerCase() === walletAddress.value.toLowerCase())
+    const receiveData = txData.transferTxs.filter(item => item.to.toLowerCase() === walletData.address.toLowerCase())
+    const sentData = txData.transferTxs.filter(item => item.from.toLowerCase() === walletData.address.toLowerCase())
     walletInfo.receive = formatNumber(receiveData.reduce((total, item) => total + fixedToFloat(BigNumber.from(item.value)), 0));
     walletInfo.sent = formatNumber(sentData.reduce((total, item) => total + fixedToFloat(BigNumber.from(item.value)), 0));
 
@@ -113,7 +123,7 @@ function dwonLoadImage() {
         backgroundColor: '#f1fcf3',
         pixelRatio: 2
     }).then(function (dataUrl) {
-        download(dataUrl, `${walletAddress.value}.png`);
+        download(dataUrl, `${walletData.address}.png`);
     }).catch(function (error) {
         console.error('oops, something went wrong!', error);
     });
@@ -130,7 +140,7 @@ function dwonLoadImage() {
             <div text-xl text-center truncate text-primary-500>
                 <span relative inline-block>
                     <img src="/logo.svg" w-6 absolute left--8 />
-                    {{ walletAddress.toUpperCase() }}
+                    {{ walletData.address.toUpperCase() }}
                 </span>
             </div>
             <div flex mt-10>

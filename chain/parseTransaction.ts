@@ -3,20 +3,16 @@ import { Token } from '@uniswap/sdk-core'
 import axios from 'axios'
 import _ from 'lodash'
 import { fixedToFloat } from '~/utils'
+import { useStorage } from '@vueuse/core'
 
-import UniSwapV2ABI from '~/chain/abi/UniSwapV2.json'
-
-// test data
-import transactions from '~/json/transactions.json';
-import erc20TransferTransactions from '~/json/erc20Transfer.json';
-import internalTransfer from '~/json/internalTransfer.json';
+import UniSwapV2ABI from '~/chain/abi/UniSwapV2.json';
 
 // etherscan api
 const api = axios.create({
     baseURL: 'https://api.etherscan.io/api', // api base
     timeout: 10 * 60 * 1000, // request timeout
     params: {
-        apikey: '',
+        apikey: useStorage('ETHERSCAN_API_KEY', '').value || '',
     },
 })
 
@@ -147,6 +143,16 @@ function setToken(address: string, decimal: number, symbol: string, name: string
 }
 
 /**
+ * Get token information based on address
+ * @param {string} address token address
+ * @param {Array} erc20 token list
+ */
+function getAddressToken(address: string, erc20: any[]) {
+    const token = _.find(erc20, (item) => item.contractAddress.toLowerCase() === address.toLowerCase());
+    return token ? setToken(token.contractAddress, parseInt(token.tokenDecimal), token.tokenSymbol, token.tokenName) : address
+}
+
+/**
  * Analyze transaction data
  * @param {any} tx  Transaction data
  * @returns 
@@ -157,7 +163,7 @@ function parseSwapData(tx: any) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
         // console.log('swapETHForExactTokens', decodedParameters, tx, erc20)
         tx.swap = {
-            tokenOut: erc20 ? setToken(erc20.contractAddress, Number(erc20.tokenDecimal), erc20.tokenSymbol, erc20.tokenName) : decodedParameters.path[1],
+            tokenOut: getAddressToken(decodedParameters.path[1], erc20),
             amountOut: decodedParameters.amountOut.toString(),
             tokenIn: WETH,
             amountIn: transfer ? String(Number(tx.value) - Number(transfer.value)) : tx.value,
@@ -177,7 +183,13 @@ function parseSwapData(tx: any) {
     }
     else if (/swapExactTokensForTokens\(/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
-        console.log('swapExactTokensForTokens', decodedParameters, tx)
+        tx.swap = {
+            tokenOut: getAddressToken(decodedParameters.path[decodedParameters.path.length - 1], erc20),
+            amountOut: decodedParameters.amountOutMin.toString(),
+            tokenIn: getAddressToken(decodedParameters.path[0], erc20),
+            amountIn: decodedParameters.amountIn.toString(),
+        }
+        // console.log('swapExactTokensForTokens', decodedParameters, tx, tx.swap)
     }
     else if (/swapExactTokensForETHSupportingFeeOnTransferTokens/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
@@ -185,19 +197,25 @@ function parseSwapData(tx: any) {
         tx.swap = {
             tokenOut: WETH,
             amountOut: transfer ? transfer.value : decodedParameters.amountOutMin.toString(),
-            tokenIn: erc20 ? setToken(erc20.contractAddress, Number(erc20.tokenDecimal), erc20.tokenSymbol, erc20.tokenName) : decodedParameters.path[0],
+            tokenIn: getAddressToken(decodedParameters.path[0], erc20),
             amountIn: decodedParameters.amountIn.toString(),
         }
     }
     else if (/swapExactTokensForETH\(/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
-        console.log('swapExactTokensForETH', decodedParameters, tx)
+        tx.swap = {
+            tokenOut: WETH,
+            amountOut: transfer.value,
+            tokenIn: getAddressToken(decodedParameters.path[0], erc20),
+            amountIn: decodedParameters.amountIn.toString(),
+        }
+        // console.log('swapExactTokensForETH', decodedParameters, tx, tx.swap)
     }
     else if (/swapExactETHForTokensSupportingFeeOnTransferTokens/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
         // console.log('swapExactETHForTokensSupportingFeeOnTransferTokens', decodedParameters, tx)
         tx.swap = {
-            tokenOut: erc20 ? setToken(erc20.contractAddress, Number(erc20.tokenDecimal), erc20.tokenSymbol, erc20.tokenName) : decodedParameters.path[1],
+            tokenOut: getAddressToken(decodedParameters.path[1], erc20),
             amountOut: erc20 ? erc20.value : decodedParameters.amountOutMin.toString(),
             tokenIn: WETH,
             amountIn: tx.value,
@@ -205,7 +223,7 @@ function parseSwapData(tx: any) {
     }
     else if (/swapExactETHForTokens\(/.test(functionName)) {
         const decodedParameters: any = decodeFunctionData(functionName, input, 'v2')
-        // console.log('swapExactETHForTokens', decodedParameters, tx)
+        console.log('swapExactETHForTokens', decodedParameters, tx)
     }
 
     // Format the amount
@@ -234,9 +252,10 @@ export function filterSwapTransactions(txns: any[]) {
  * @returns
  */
 export function parseTransaction(txs: any[], erc20Txs: any[], internalTransferTxs: any[]) {
+    console.log(txs)
     let allTxs = _.filter(txs, { txreceipt_status: '1' })
     allTxs = allTxs.map((tx) => {
-        const erc20 = _.find(erc20Txs, { hash: tx.hash })
+        const erc20 = _.filter(erc20Txs, { hash: tx.hash })
         const transfer = _.find(internalTransferTxs, { hash: tx.hash })
         if (erc20)
             tx.erc20 = erc20
