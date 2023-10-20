@@ -50,7 +50,8 @@ watch(
 
 function getSwapTokenRecord(data: any[]) {
     console.log('data: ', data);
-    const tokenData = _(data)
+    const filterData = _.filter(data, (item) => !(item.tokenIn.symbol !== 'ETH' && item.tokenOut.symbol !== 'ETH'))
+    const tokenData = _(filterData)
         .map(item => {
             if (item.tokenIn.symbol !== 'ETH') {
                 item.side = 'sell'
@@ -144,7 +145,8 @@ function dwonLoadImage() {
                 </span>
             </div>
             <div flex mt-10>
-                <div class="w-1/3" px-8 shadow-lg py-4 bg-primary-400 rounded-lg shadow-slate-200 relative>
+                <div :class="['w-1/3', parseFloat(walletInfo.winRate) >= 70 ? 'bg-primary-400' : '', parseFloat(walletInfo.winRate) > 50 && parseFloat(walletInfo.winRate) < 70 ? 'bg-yellow-400' : '', parseFloat(walletInfo.winRate) < 50 ? 'bg-red-400' : '',]"
+                    px-8 shadow-lg py-4 rounded-lg shadow-slate-200 relative>
                     <p text-white absolute bottom-3 right-3 text-xs>交易胜率</p>
                     <p text-6xl text-white text-center my-9 class="left-1/4	top-1/4">{{ walletInfo.winRate
                     }}<span text-3xl>%</span></p>
